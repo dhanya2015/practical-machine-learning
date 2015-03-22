@@ -1,0 +1,167 @@
+---
+title: "project report"
+author: "dhanya2015"
+date: "Saturday, March 21, 2015"
+output: html_document
+---
+
+```opts_chunk$set(cache=TRUE)
+
+```
+
+
+setting the working directory
+
+getwd()
+
+installing the packages
+
+```Install.packages("")
+
+```
+
+library(caret)
+library(rpart)
+library(randomForest)
+
+If file exits, create a directory data
+
+if(!file.exists("./data")){dir.create("./data")}
+```if(!file.exists("./data")){dir.create("./data")}
+
+```
+
+Download the data
+
+urls <- ("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv")
+download.file(urls, "./data/pml-training.csv")
+
+urls <- ("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv")
+download.file(urls, "./data/pml-testing.csv")
+
+setting the working directory to download data
+
+setwd("./data/")
+
+Load the data
+
+training <- read.csv("pml-training.csv", header=TRUE, sep=",",
+                     stringsAsFactors=FALSE)
+testing  <- read.csv("pml-testing.csv", header=TRUE, sep=",",
+                     stringsAsFactors=FALSE)
+
+Coercing of data
+
+for (i in 1:length(testing) ) {
+        for(j in 1:length(myTraining)) {
+        if( length( grep(names(myTraining[i]), names(testing)[j]) ) ==1)  {
+            class(testing[j]) <- class(myTraining[i])
+        }      
+    }      
+}
+
+testing <- rbind(myTraining[2, -58] , testing)
+testing <- testing[-1,]
+
+Using ML algorithms for prediction: Decision Tree
+
+
+fancyRpartPlot(model31)
+
+Prediction
+
+
+model31 <- bagging(classe ~., data=training_mod3, nbagg=25)
+
+ pred31 <- predict(model31, testing_mod3)
+ pred31
+ [1] B A B A A E D B A A B C B A E E A B B B
+confusionMatrix(pred31_train, training_mod3$classe)
+
+Overall Statistics
+                                     
+               Accuracy : 0.9999     
+                 95% CI : (0.9997, 1)
+    No Information Rate : 0.2844     
+    P-Value [Acc > NIR] : < 2.2e-16  
+                                     
+                  Kappa : 0.9999     
+ Mcnemar's Test P-Value : NA         
+
+
+ML algorithms for prediction: Random Forests
+
+ model30 <- train(classe ~., method="rf", data=training_mod3, 
++                  trControl=trainControl(method="cv"), number=3)
+ pred30_train <- predict(model30, training_mod3)
+
+ pred30 <- predict(model30, testing_mod3)
+
+Resampling: Cross-Validated (10 fold) 
+
+
+pred30
+ [1] B A B A A E D B A A B C B A E E A B 
+ confusionMatrix(pred30_train, training_mod3$classe)
+
+Overall Statistics
+                                     
+               Accuracy : 1          
+                 95% CI : (0.9998, 1)
+    No Information Rate : 0.2844     
+    P-Value [Acc > NIR] : < 2.2e-16  
+                Kappa : 1          
+ 
+ prediction method="c5.0"
+ 
+pred32_train <- predict(model32, training_mod3)
+
+ pred32 <- predict(model32, testing_mod3)
+
+pred32
+ [1] B A B A A E D B A A B C B A E E A B B B
+confusionMatrix(pred32_train, training_mod3$classe)
+Overall Statistics
+                                     
+               Accuracy : 1          
+                 95% CI : (0.9998, 1)
+    No Information Rate : 0.2844     
+    P-Value [Acc > NIR] : < 2.2e-16  
+                                     
+                  Kappa : 1          
+ Mcnemar's Test P-Value : NA         
+
+
+Random Forests yielded better Results, as expected!
+
+Generating Files to submit as answers for the Assignment:
+
+Finally, using the provided Test Set,
+
+For Random Forests is, which yielded a much better prediction:
+pred30 <- predict(model30, testing_mod3)
+
+Function to generate files with predictions to submit for assignment
+
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+
+pml_write_files(pred30)
+
+
+```{r}
+summary(cars)
+```
+
+
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+
